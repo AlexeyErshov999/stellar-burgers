@@ -11,8 +11,8 @@ const initialState: burgerConstructorState = {
   error: null
 };
 
-const burgerConstructorSlice = createSlice({
-  name: 'burgerConstructor',
+const ConstructorSlice = createSlice({
+  name: 'constructor',
   initialState,
   selectors: {
     burgerConstructorSelector: (state) => state.burgerConstructor
@@ -57,12 +57,12 @@ const burgerConstructorSlice = createSlice({
   }
 });
 
-export const { burgerConstructorSelector } = burgerConstructorSlice.selectors;
+export const { burgerConstructorSelector } = ConstructorSlice.selectors;
 export const {
   addIngredient,
   upIngredient,
   downIngredient,
   removeIngredient,
   clearBurgerConstructor
-} = burgerConstructorSlice.actions;
-export default burgerConstructorSlice.reducer;
+} = ConstructorSlice.actions;
+export default ConstructorSlice.reducer;
