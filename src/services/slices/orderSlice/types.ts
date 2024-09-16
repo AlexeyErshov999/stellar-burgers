@@ -1,7 +1,7 @@
 import { TOrder } from "@utils-types";
 
 export interface OrderState {
+    isLoading: boolean;
     order: TOrder | null;
-    isOrderLoading: boolean;
     error: string | null;
   }

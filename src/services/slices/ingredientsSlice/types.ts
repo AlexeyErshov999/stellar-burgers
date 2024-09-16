@@ -1,7 +1,7 @@
 import { TIngredient } from "@utils-types";
 
-export interface IngredientsState {
+export interface ingredientsState {
+    isLoading: boolean;
     ingredients: TIngredient[];
-    isIngredientsLoading: boolean;
     error: string | null;
   }

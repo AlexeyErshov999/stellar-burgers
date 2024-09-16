@@ -1,16 +1,4 @@
-// хуки и функции реакт
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-
-// стили
-import '../../index.css';
-import styles from './app.module.css';
-
-// компоненты
-import { AppHeader, IngredientDetails, OrderInfo } from '@components';
-import { ProtectedRoute } from '../protected-route/protected-route';
-
-// страницы
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import {
   ConstructorPage,
   Feed,
@@ -22,81 +10,112 @@ import {
   Register,
   ResetPassword
 } from '@pages';
+import '../../index.css';
+import styles from './app.module.css';
+import {
+  AppHeader,
+  Modal,
+  OrderInfo,
+  IngredientDetails,
+  ProtectedRoute,
+  Center
+} from '@components';
+import { useDispatch } from '@store';
+import { getIngredientsThunk, getUserThunk } from '@slices';
+import { useEffect } from 'react';
 
 const App = () => {
-  const location = useLocation();
   const navigate = useNavigate();
-  const background = location.state?.background;
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const backgroundLocation = location.state?.background;
 
-  // Первоначальная загрузка данных
-  useEffect(() => {}, []);
+  useEffect(() => {
+    dispatch(getUserThunk());
+    dispatch(getIngredientsThunk());
+  }, [dispatch]);
+
+  const renderRoute = (
+    path: string,
+    element: React.ReactNode,
+    title: string
+  ) => <Route path={path} element={<Center title={title}>{element}</Center>} />;
+
+  const renderModalRoute = (
+    path: string,
+    element: React.ReactNode,
+    title: string,
+    onClose: () => void
+  ) => (
+    <Route
+      path={path}
+      element={
+        <Modal title={title} onClose={onClose}>
+          {element}
+        </Modal>
+      }
+    />
+  );
 
   return (
     <div className={styles.app}>
       <AppHeader />
-      <Routes location={background}>
+      <Routes location={backgroundLocation || location}>
         <Route path='/' element={<ConstructorPage />} />
+        {renderRoute(
+          '/ingredients/:id',
+          <IngredientDetails />,
+          'Детали ингредиента'
+        )}
         <Route path='/feed' element={<Feed />} />
-        <Route path='/feed/:number' element={<OrderInfo />} />
-        <Route path='/ingredients/:id' element={<IngredientDetails />} />
-        <Route
-          path='/login'
-          element={
-            <ProtectedRoute onlyUnauth>
-              <Login />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/register'
-          element={
-            <ProtectedRoute onlyUnauth>
-              <Register />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/forgot-password'
-          element={
-            <ProtectedRoute onlyUnauth>
-              <ForgotPassword />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/reset-password'
-          element={
-            <ProtectedRoute onlyUnauth>
-              <ResetPassword />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/profile'
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/profile/orders'
-          element={
-            <ProtectedRoute>
-              <ProfileOrders />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='/profile/orders/:number'
-          element={
-            <ProtectedRoute>
-              <OrderInfo />
-            </ProtectedRoute>
-          }
-        />
+        {renderRoute(
+          '/feed/:number',
+          <OrderInfo />,
+          `#${location.pathname.match(/\d+/)}`
+        )}
+        <Route element={<ProtectedRoute forAuthorized={false} />}>
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+          <Route path='/forgot-password' element={<ForgotPassword />} />
+          <Route path='/reset-password' element={<ResetPassword />} />
+        </Route>
+        <Route element={<ProtectedRoute forAuthorized />}>
+          <Route path='/profile'>
+            <Route index element={<Profile />} />
+            <Route path='orders' element={<ProfileOrders />} />
+            {renderRoute(
+              '/profile/orders/:number',
+              <OrderInfo />,
+              `#${location.pathname.match(/\d+/)}`
+            )}
+          </Route>
+        </Route>
         <Route path='*' element={<NotFound404 />} />
       </Routes>
+      {backgroundLocation && (
+        <Routes>
+          {renderModalRoute(
+            '/feed/:number',
+            <OrderInfo />,
+            `#${location.pathname.match(/\d+/)}`,
+            () => navigate(-1)
+          )}
+          {renderModalRoute(
+            '/ingredients/:id',
+            <IngredientDetails />,
+            'Детали ингредиента',
+            () => navigate(-1)
+          )}
+          <Route element={<ProtectedRoute forAuthorized />}>
+            {renderModalRoute(
+              '/profile/orders/:number',
+              <OrderInfo />,
+              `#${location.pathname.match(/\d+/)}`,
+              () => navigate('/profile/orders')
+            )}
+          </Route>
+        </Routes>
+      )}
     </div>
   );
 };
