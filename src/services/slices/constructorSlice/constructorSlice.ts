@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, nanoid } from '@reduxjs/toolkit';
-import { orderBurgerApi } from '@api';
+import { orderBurgerApi } from '../../../utils/burger-api';
 import { constructorState } from './types';
 
 const initialState: constructorState = {
